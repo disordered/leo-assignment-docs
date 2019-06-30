@@ -1,0 +1,297 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "LEO Assignment",
+    "description": "Brief documentation on LEO assignment REST API"
+  },
+  "tags": [
+    {
+      "name": "Images",
+      "description": "Operations to access Images"
+    }
+  ],
+  "paths": {
+    "/images/{id}": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "Get image by id",
+        "description": "Downloads the image specified by `id`",
+        "operationId": "getImageByID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id that needs to be fetched",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string",
+                  "example": "attachment; filename=\"image.jpg\""
+                }
+              }
+            },
+            "content": {
+              "image/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Image not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Image with id '9' not found"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "Delete image",
+        "description": "Deletes image specified by `id`",
+        "operationId": "deleteImage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id that needs to be fetched",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Image not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Image with id '9' not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/images": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "List images",
+        "description": "Lists all available images. Supports pagination via `page` parameter.",
+        "operationId": "listImages",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number to return",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "Current-Page": {
+                "description": "Number of the current page",
+                "schema": {
+                  "type": "integer",
+                  "example": 1
+                }
+              },
+              "Page-Items": {
+                "description": "Number of images per page. Currently, hardcoded to `5`",
+                "schema": {
+                  "type": "integer",
+                  "example": 5
+                }
+              },
+              "Total-Pages": {
+                "description": "Number of total pages available",
+                "schema": {
+                  "type": "integer",
+                  "example": 5
+                }
+              },
+              "Total-Count": {
+                "description": "Number of images available",
+                "schema": {
+                  "type": "integer",
+                  "example": 25
+                }
+              },
+              "Link": {
+                "description": "RFC-8288 navigation to relative pages",
+                "schema": {
+                  "type": "string",
+                  "example": "<http://www.example.com/images?page=1>; rel=\"first\", <http://www.example.com/images?page=1>; rel=\"prev\", <http://www.example.com/images?page=5>; rel=\"last\""
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "location": {
+                        "description": "Image location",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "Image id",
+                        "type": "integer"
+                      },
+                      "filename": {
+                        "description": "Image filename",
+                        "type": "string"
+                      },
+                      "size": {
+                        "description": "Image size in bytes",
+                        "type": "integer"
+                      },
+                      "mime_type": {
+                        "description": "Image mime type",
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "location": "www.example.com/images/1",
+                    "id": 1,
+                    "filename": "image.jpg",
+                    "size": 1024,
+                    "mime_type": "image/jpeg"
+                  },
+                  {
+                    "location": "www.example.com/images/2",
+                    "id": 2,
+                    "filename": "image2.png",
+                    "size": 2048,
+                    "mimetype": "image/png"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "Upload image",
+        "description": "Uploads the image. `Content-Disposition` tags are optional.",
+        "operationId": "uploadImage",
+        "parameters": [
+          {
+            "name": "Content-Disposition",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "example": "form-data; name=\"image\"; filename=\"image.jpg\""
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "headers": {
+              "Location": {
+                "description": "Url for newly uploaded image",
+                "schema": {
+                  "type": "string",
+                  "example": "www.example.com/images/1"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Image form data missing"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "description": "Image data to upload",
+          "content": {
+            "image/*": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "image"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "description": "Error response",
+        "type": "object",
+        "properties": {
+          "error": {
+            "description": "Error message",
+            "type": "string",
+            "example": "Detail error message"
+          }
+        }
+      }
+    }
+  }
+}
